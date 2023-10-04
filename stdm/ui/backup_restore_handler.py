@@ -38,7 +38,7 @@ from stdm.settings.registryconfig import (
     COMPOSER_TEMPLATE
 )
 
-from stdm.ui.config_backup_handler import _get_pg_base_folder
+from stdm.data.pg_utils import get_pg_base_folder
 
 from stdm.utils.util import (
     PLUGIN_DIR
@@ -330,7 +330,7 @@ class BackupRestoreHandler(QObject):
     def _restore_database(self, db_conn_params: DatabaseConnection, user: str,
                          password: str, db_name: str, backup_filepath: str) -> bool:
 
-        base_folder = _get_pg_base_folder()
+        base_folder = get_pg_base_folder()
         if base_folder == "":
             return False
 
@@ -372,7 +372,7 @@ class BackupRestoreHandler(QObject):
         msg = f'Creating database `{db_name}`...'
         self.logger.log_info(msg)
 
-        base_pg_folder =  _get_pg_base_folder()
+        base_pg_folder =  get_pg_base_folder()
         if base_pg_folder == "":
             return False
         

@@ -17,6 +17,8 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+from sys import platform
+
 from typing import List
 
 from geoalchemy2 import WKBElement
@@ -1016,3 +1018,58 @@ def set_child_dependencies_null_on_delete(table):
         _execute(sql)
 
     return True
+
+def _get_pg_base_folder_linux(self) ->str:
+        """
+        PostgrSQL base folder
+        """
+        # TODO fix path
+        return "/var/lib/postgresql/15/main"
+
+def _get_pg_base_folder_mac(self) ->str:
+        """
+        PostgrSQL base folder
+        """
+        # TODO fix path
+        return "/var/lib/postgresql/15/main"
+
+def _get_pg_base_folder_win(self) ->str:
+        """
+        PostgrSQL base folder
+        """
+        import winreg
+        reg_key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\PostgreSQL\\Installations\\")
+        pg_base_value = ""
+        for i in range(winreg.QueryInfoKey(reg_key)[0]):
+            try:
+                subkey_name = winreg.EnumKey(reg_key, i)
+                subkey = winreg.OpenKey(reg_key, subkey_name)
+
+                for j in range(winreg.QueryInfoKey(subkey)[1]):
+                    name, value,_ = winreg.EnumValue(subkey, j)
+                    if name == "Base Directory":
+                        pg_base_value = value
+                        break
+                if not pg_base_value == "":
+                    break
+                winreg.CloseKey(subkey)
+            except OSError:
+                pass
+        winreg.CloseKey(reg_key)
+
+        return pg_base_value
+
+def get_pg_base_folder(self) ->str:
+        """
+        PostgrSQL base folder
+        """
+
+        # windows
+        if platform.startswith('win32'):
+            return _get_pg_base_folder_win()
+        # macOS
+        elif platform.startswith('darwin'):
+            return _get_pg_base_folder_mac()
+        # *nix
+        else:
+            return _get_pg_base_folder_linux()

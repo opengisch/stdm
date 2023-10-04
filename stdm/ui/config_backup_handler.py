@@ -20,7 +20,6 @@ email                : stdm@unhabitat.org
 """
 import os
 import shutil
-import winreg
 import json
 import subprocess
 from subprocess import Popen
@@ -41,6 +40,7 @@ from stdm.utils.logging_handlers import (
 from stdm.data.config import DatabaseConfig
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from stdm.data.connection import DatabaseConnection
+from stdm.data.pg_utils import get_pg_base_folder
 from stdm.security.user import User
 from stdm.data.configuration.entity import Entity
 from stdm.data.configuration.profile import Profile
@@ -202,7 +202,7 @@ class ConfigBackupHandler(QObject):
     def _backup_database(self, db_con: DatabaseConnection, user: str, password: str,
                          backup_filepath: str, backup_folder:str) ->tuple[bool, str]:
 
-        base_folder = self._get_pg_base_folder()
+        base_folder = get_pg_base_folder()
         if base_folder == "":
             return False
 
@@ -289,29 +289,3 @@ class ConfigBackupHandler(QObject):
         self.update_status.emit(msg, self._backup_step)
         QCoreApplication.processEvents()
         self._backup_step = self._backup_step + 1
-
-    def _get_pg_base_folder(self) ->str:
-            """
-            PostgrSQL base folder
-            """
-            reg_key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\PostgreSQL\\Installations\\")
-            pg_base_value = ""
-            for i in range(winreg.QueryInfoKey(reg_key)[0]):
-                try:
-                    subkey_name = winreg.EnumKey(reg_key, i)
-                    subkey = winreg.OpenKey(reg_key, subkey_name)
-
-                    for j in range(winreg.QueryInfoKey(subkey)[1]):
-                        name, value,_ = winreg.EnumValue(subkey, j)
-                        if name == "Base Directory":
-                            pg_base_value = value
-                            break
-                    if not pg_base_value == "":
-                        break
-                    winreg.CloseKey(subkey)
-                except OSError:
-                    pass
-            winreg.CloseKey(reg_key)
-
-            return pg_base_value
-
