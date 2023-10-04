@@ -179,7 +179,7 @@ class ContentGroup(QObject, HashableMixin):
                     cnt = Content()
                     qo = cnt.queryObject()
                     cn = qo.filter(Content.name == c.name).first()
-                    c.code = cn.code
+                    c.code = cn.code #TODO this breaks if the user is not postgres
 
 
 class TableContentGroup(ContentGroup):
